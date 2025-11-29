@@ -29,9 +29,20 @@ export async function POST(req: Request) {
       throw new Error('LIVEKIT_API_SECRET is not defined');
     }
 
-    // Parse agent configuration from request body
-    const body = await req.json();
-    const agentName: string = body?.room_config?.agents?.[0]?.agent_name;
+    // Parse agent configuration from request body (با مدیریت body خالی)
+    let body: any = {};
+    let agentName: string | undefined = undefined;
+
+    try {
+      const text = await req.text();
+      if (text && text.trim()) {
+        body = JSON.parse(text);
+        agentName = body?.room_config?.agents?.[0]?.agent_name;
+      }
+    } catch (parseError) {
+      // اگر body خالی یا نامعتبر بود، بدون agentName ادامه می‌دهیم
+      console.log('No valid JSON body provided, continuing without agent configuration');
+    }
 
     // Generate participant token
     const participantName = 'user';
